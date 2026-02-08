@@ -35,7 +35,7 @@ pub struct AddEntryRequest {
     pub url: String,
     pub title: Option<String>,
     pub summary: Option<String>,
-    pub source_type: Option<EntrySourceType>,
+    pub source_type: EntrySourceType,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

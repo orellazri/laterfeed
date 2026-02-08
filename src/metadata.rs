@@ -2,28 +2,6 @@ use std::time::Duration;
 
 use scraper::{Html, Selector};
 
-use crate::models::EntrySourceType;
-
-const VIDEO_DOMAINS: &[&str] = &[
-    "youtube.com",
-    "youtu.be",
-    "vimeo.com",
-    "dailymotion.com",
-    "twitch.tv",
-];
-
-/// Detect the source type from a URL by checking against known video domains.
-/// Returns `Video` if the URL matches a known video domain, otherwise `Article`.
-pub fn detect_source_type(url: &str) -> EntrySourceType {
-    let normalized = url.to_lowercase();
-    for domain in VIDEO_DOMAINS {
-        if normalized.contains(domain) {
-            return EntrySourceType::Video;
-        }
-    }
-    EntrySourceType::Article
-}
-
 pub struct PageMetadata {
     pub title: Option<String>,
     pub summary: Option<String>,

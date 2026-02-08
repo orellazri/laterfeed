@@ -51,11 +51,7 @@ pub async fn add_entry(
     // Fall back to using the URL as the title if still missing
     let title = title.unwrap_or_else(|| body.url.clone());
 
-    // Use caller-provided source_type, or auto-detect from URL
-    let source_type = body
-        .source_type
-        .map(|st| st.into())
-        .unwrap_or_else(|| metadata::detect_source_type(&body.url));
+    let source_type: models::EntrySourceType = body.source_type.into();
 
     let entry = models::Entry::create(
         &state.pool,
