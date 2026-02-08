@@ -7,6 +7,10 @@ default:
 run:
     cargo run
 
+# Run tests
+test:
+    cargo test
+
 # Create a migration
 migrate-create name:
     sqlx migrate add {{ name }}

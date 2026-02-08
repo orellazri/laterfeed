@@ -65,3 +65,74 @@ fn entry_to_atom(entry: &Entry) -> AtomEntry {
 
     atom_entry
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::EntrySourceType;
+    use chrono::TimeZone;
+
+    fn make_entry(id: i64, url: &str, title: &str, summary: Option<&str>) -> Entry {
+        Entry {
+            id,
+            url: url.to_string(),
+            title: title.to_string(),
+            summary: summary.map(|s| s.to_string()),
+            source_type: EntrySourceType::Article,
+            created_at: Utc.with_ymd_and_hms(2026, 1, 15, 12, 0, 0).unwrap(),
+        }
+    }
+
+    #[test]
+    fn build_atom_feed_empty_entries() {
+        let xml = build_atom_feed(&[], "https://example.com");
+
+        assert!(xml.contains("<title>Laterfeed</title>"));
+        assert!(xml.contains("<id>https://example.com/feed</id>"));
+        assert!(xml.contains(r#"rel="self""#));
+        assert!(xml.contains(r#"rel="alternate""#));
+        assert!(!xml.contains("<entry>"));
+    }
+
+    #[test]
+    fn build_atom_feed_multiple_entries_with_and_without_summary() {
+        let entries = vec![
+            make_entry(1, "https://example.com/a", "First", Some("Summary A")),
+            make_entry(2, "https://example.com/b", "Second", None),
+            make_entry(3, "https://example.com/c", "Third", Some("Summary C")),
+        ];
+
+        let xml = build_atom_feed(&entries, "https://example.com");
+
+        // All entries present
+        assert!(xml.contains("<title>First</title>"));
+        assert!(xml.contains("<title>Second</title>"));
+        assert!(xml.contains("<title>Third</title>"));
+
+        // Summaries included where provided
+        assert!(xml.contains("Summary A"));
+        assert!(xml.contains("Summary C"));
+
+        // Feed updated time should come from the first entry
+        assert!(xml.contains("2026-01-15"));
+    }
+
+    #[test]
+    fn entry_to_atom_maps_all_fields() {
+        let entry = make_entry(
+            10,
+            "https://example.com/article",
+            "Test Article",
+            Some("Test description"),
+        );
+
+        let atom = entry_to_atom(&entry);
+
+        assert_eq!(atom.title.value, "Test Article");
+        assert_eq!(atom.id, "https://example.com/article");
+        assert_eq!(atom.links.len(), 1);
+        assert_eq!(atom.links[0].href, "https://example.com/article");
+        assert_eq!(atom.links[0].rel, "alternate");
+        assert_eq!(atom.summary.unwrap().value, "Test description");
+    }
+}

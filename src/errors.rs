@@ -33,3 +33,21 @@ impl IntoResponse for Error {
         (self.status_code(), Json(json!({"message": message}))).into_response()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::response::IntoResponse;
+    use http_body_util::BodyExt;
+
+    #[tokio::test]
+    async fn unauthorized_produces_401_json_response() {
+        let response = Error::Unauthorized.into_response();
+
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(json["message"], "Unauthorized");
+    }
+}

@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, query_as, sqlite::SqlitePool};
 
-#[derive(sqlx::Type, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(sqlx::Type, Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(i64)]
 pub enum EntrySourceType {
     Article = 0,
@@ -78,5 +78,29 @@ impl Entry {
         )
         .fetch_all(pool)
         .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn entry_source_type_from_i64_article() {
+        assert_eq!(EntrySourceType::from(0), EntrySourceType::Article);
+    }
+
+    #[test]
+    fn entry_source_type_from_i64_video() {
+        assert_eq!(EntrySourceType::from(1), EntrySourceType::Video);
+    }
+
+    #[test]
+    fn entry_source_type_from_i64_unknown_defaults_to_article() {
+        assert_eq!(EntrySourceType::from(2), EntrySourceType::Article);
+        assert_eq!(EntrySourceType::from(-1), EntrySourceType::Article);
+        assert_eq!(EntrySourceType::from(100), EntrySourceType::Article);
+        assert_eq!(EntrySourceType::from(i64::MAX), EntrySourceType::Article);
+        assert_eq!(EntrySourceType::from(i64::MIN), EntrySourceType::Article);
     }
 }

@@ -65,3 +65,31 @@ impl From<models::Entry> for EntryResponse {
 pub struct ListEntriesResponse {
     pub entries: Vec<EntryResponse>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+
+    #[test]
+    fn entry_response_from_model_entry() {
+        let now = Utc::now();
+        let entry = models::Entry {
+            id: 42,
+            url: "https://example.com".to_string(),
+            title: "Test Title".to_string(),
+            summary: Some("Test Summary".to_string()),
+            source_type: models::EntrySourceType::Video,
+            created_at: now,
+        };
+
+        let response: EntryResponse = entry.into();
+
+        assert_eq!(response.id, 42);
+        assert_eq!(response.url, "https://example.com");
+        assert_eq!(response.title, "Test Title");
+        assert_eq!(response.summary, Some("Test Summary".to_string()));
+        assert!(matches!(response.source_type, EntrySourceType::Video));
+        assert_eq!(response.created_at, now);
+    }
+}
