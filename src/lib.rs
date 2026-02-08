@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use axum::{middleware, routing::get};
-use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
+use sqlx::{SqlitePool, migrate, sqlite::SqlitePoolOptions};
 use tower_http::trace::TraceLayer;
+use tracing::info;
 use utoipa::{
     Modify, OpenApi,
     openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
@@ -74,6 +75,12 @@ pub async fn app(
         .connect(&config.database_url)
         .await
         .expect("Failed to connect to database");
+
+    info!("migrating database");
+    migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("failed to migrate database");
 
     let app_state = AppState::new(AppStateInner { config, pool });
 
