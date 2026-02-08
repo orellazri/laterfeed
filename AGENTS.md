@@ -6,5 +6,5 @@ Tech Stack: Rust, Axum, SQLx (SQLite), Utoipa (OpenAPI)
 
 ## Important Notes
 
-- When adding dependencies, use `cargo add` or `pnpm add` to get the latest versions. Do not update `Cargo.toml` or `package.json` manually.
+- When adding dependencies, use `cargo add` to get the latest versions. Do not update `Cargo.toml` manually.
 - After making changes, run `cargo clippy` and fix any issues.
