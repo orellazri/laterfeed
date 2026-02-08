@@ -10,9 +10,7 @@ use crate::{
     AppState, FEED_TAG,
     dto::{AddEntryRequest, EntryResponse, ListEntriesResponse},
     errors::Result,
-    feed,
-    metadata,
-    models,
+    feed, metadata, models,
 };
 
 pub async fn health() -> &'static str {
@@ -28,7 +26,9 @@ pub async fn health() -> &'static str {
     responses(
         (status = 201, description = "Entry", body = EntryResponse),
     ),
-    security(),
+    security(
+        ("bearer" = [])
+    )
 )]
 pub async fn add_entry(
     State(state): State<AppState>,
@@ -77,8 +77,7 @@ pub async fn add_entry(
     tag = FEED_TAG,
     responses(
         (status = 200, description = "List of entries", body = ListEntriesResponse),
-    ),
-    security(),
+    )
 )]
 pub async fn list_entries(State(state): State<AppState>) -> Result<impl IntoResponse> {
     let entries = models::Entry::fetch_all(&state.pool).await?;
@@ -96,8 +95,7 @@ pub async fn list_entries(State(state): State<AppState>) -> Result<impl IntoResp
     tag = FEED_TAG,
     responses(
         (status = 200, description = "Atom XML feed", content_type = "application/atom+xml", body = String),
-    ),
-    security(),
+    )
 )]
 pub async fn get_feed(State(state): State<AppState>) -> Result<impl IntoResponse> {
     let entries = models::Entry::fetch_latest(&state.pool, feed::entry_limit()).await?;

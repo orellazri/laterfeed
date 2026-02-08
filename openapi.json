@@ -27,8 +27,7 @@
               }
             }
           }
-        },
-        "security": []
+        }
       },
       "post": {
         "tags": [
@@ -58,7 +57,11 @@
             }
           }
         },
-        "security": []
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/feed": {
@@ -79,8 +82,7 @@
               }
             }
           }
-        },
-        "security": []
+        }
       }
     }
   },
@@ -179,16 +181,11 @@
     "securitySchemes": {
       "bearer": {
         "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "scheme": "bearer"
       }
     }
   },
-  "security": [
-    {
-      "bearer": []
-    }
-  ],
+  "security": [],
   "tags": [
     {
       "name": "Common"

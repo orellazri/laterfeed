@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::routing::get;
+use axum::{middleware, routing::get};
 use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use tower_http::trace::TraceLayer;
 use utoipa::{
@@ -12,6 +12,7 @@ use utoipa_scalar::{Scalar, Servable};
 
 use crate::config::Config;
 
+mod auth;
 pub mod config;
 mod dto;
 mod errors;
@@ -30,9 +31,7 @@ pub const FEED_TAG: &str = "Feed";
         (name = COMMON_TAG),
         (name = FEED_TAG),
     ),
-    security(
-        ("bearer" = [])
-    )
+    security()
 )]
 pub struct ApiDoc;
 
@@ -43,12 +42,7 @@ impl Modify for SecurityAddon {
         if let Some(components) = openapi.components.as_mut() {
             components.add_security_scheme(
                 "bearer",
-                SecurityScheme::Http(
-                    HttpBuilder::new()
-                        .scheme(HttpAuthScheme::Bearer)
-                        .bearer_format("JWT")
-                        .build(),
-                ),
+                SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).build()),
             )
         }
     }
@@ -83,11 +77,18 @@ pub async fn app(
 
     let app_state = AppState::new(AppStateInner { config, pool });
 
+    let authenticated_routes = OpenApiRouter::new()
+        .routes(routes!(handlers::add_entry))
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            auth::auth_guard,
+        ));
+
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .route("/health", get(handlers::health))
         .routes(routes!(handlers::get_feed))
-        .routes(routes!(handlers::add_entry))
         .routes(routes!(handlers::list_entries))
+        .merge(authenticated_routes)
         .with_state(app_state)
         .layer(TraceLayer::new_for_http())
         .layer(cors)

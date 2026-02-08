@@ -68,12 +68,12 @@ async fn fetch_metadata_inner(url: &str) -> anyhow::Result<PageMetadata> {
 fn extract_title(document: &Html) -> Option<String> {
     // Try <meta property="og:title"> first, then fall back to <title>
     let og_title_selector = Selector::parse(r#"meta[property="og:title"]"#).ok()?;
-    if let Some(element) = document.select(&og_title_selector).next() {
-        if let Some(content) = element.value().attr("content") {
-            let trimmed = content.trim();
-            if !trimmed.is_empty() {
-                return Some(trimmed.to_string());
-            }
+    if let Some(element) = document.select(&og_title_selector).next()
+        && let Some(content) = element.value().attr("content")
+    {
+        let trimmed = content.trim();
+        if !trimmed.is_empty() {
+            return Some(trimmed.to_string());
         }
     }
 
@@ -88,22 +88,22 @@ fn extract_title(document: &Html) -> Option<String> {
 fn extract_description(document: &Html) -> Option<String> {
     // Try <meta property="og:description"> first, then <meta name="description">
     let og_desc_selector = Selector::parse(r#"meta[property="og:description"]"#).ok()?;
-    if let Some(element) = document.select(&og_desc_selector).next() {
-        if let Some(content) = element.value().attr("content") {
-            let trimmed = content.trim();
-            if !trimmed.is_empty() {
-                return Some(trimmed.to_string());
-            }
+    if let Some(element) = document.select(&og_desc_selector).next()
+        && let Some(content) = element.value().attr("content")
+    {
+        let trimmed = content.trim();
+        if !trimmed.is_empty() {
+            return Some(trimmed.to_string());
         }
     }
 
     let desc_selector = Selector::parse(r#"meta[name="description"]"#).ok()?;
-    if let Some(element) = document.select(&desc_selector).next() {
-        if let Some(content) = element.value().attr("content") {
-            let trimmed = content.trim();
-            if !trimmed.is_empty() {
-                return Some(trimmed.to_string());
-            }
+    if let Some(element) = document.select(&desc_selector).next()
+        && let Some(content) = element.value().attr("content")
+    {
+        let trimmed = content.trim();
+        if !trimmed.is_empty() {
+            return Some(trimmed.to_string());
         }
     }
 
