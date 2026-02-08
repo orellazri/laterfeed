@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, query, query_as, sqlite::SqlitePool};
+use sqlx::{FromRow, query_as, sqlite::SqlitePool};
 
 #[derive(sqlx::Type, Serialize, Deserialize, Copy, Clone, Eq, PartialEq)]
 #[repr(i64)]
