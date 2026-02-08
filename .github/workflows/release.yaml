@@ -27,12 +27,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v5
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-cache
-
       - name: Set version tag
         run: |
           VERSION_TAG=${GITHUB_REF#refs/tags/v}
@@ -47,13 +41,6 @@ jobs:
           tags: |
             reaperberri/laterfeed:latest
             reaperberri/laterfeed:${{ env.VERSION_TAG }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-
-      - name: Move cache to original location
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

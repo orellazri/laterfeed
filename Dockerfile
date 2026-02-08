@@ -1,50 +1,33 @@
-########################################################
-# Chef image
-########################################################
-FROM rust:1.92 AS base
-
-RUN cargo install cargo-chef sccache
-
-ENV RUSTC_WRAPPER=sccache SCCACHE_DIR=/sccache
-
-
-########################################################
-# Planner image
-########################################################
-FROM base AS planner
+FROM rust:1.92-trixie AS builder
 
 WORKDIR /app
 
-COPY . .
-RUN cargo chef prepare --recipe-path recipe.json
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo "fn main() {}" > src/main.rs && echo "" > src/lib.rs
+RUN cargo build --release && rm -rf src
 
-########################################################
-# Builder image
-########################################################
-FROM base AS builder
+COPY src ./src
+COPY .sqlx ./.sqlx
+COPY migrations ./migrations
 
+RUN touch src/main.rs src/lib.rs
 ENV SQLX_OFFLINE=true
-
-WORKDIR /app
-
-COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
-
-COPY . .
 RUN cargo build --release
 
-########################################################
-# Final image
-########################################################
 FROM debian:trixie-slim
 
-RUN groupadd --system appuser && useradd --system --no-create-home --gid appuser appuser
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -r -s /bin/false laterfeed
 
 WORKDIR /app
-RUN chown -R appuser:appuser /app
 
-USER appuser
+COPY --from=builder /app/target/release/laterfeed ./laterfeed
 
-COPY --from=builder /app/target/release/laterfeed /usr/local/bin/laterfeed
+RUN mkdir /data && chown laterfeed:laterfeed /data
 
-ENTRYPOINT ["/usr/local/bin/laterfeed"]
+USER laterfeed
+
+EXPOSE 8000
+
+ENTRYPOINT ["./laterfeed"]
