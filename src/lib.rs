@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use axum::{middleware, routing::get};
-use sqlx::{SqlitePool, migrate, sqlite::SqlitePoolOptions};
+use sqlx::migrate::MigrateDatabase;
+use sqlx::{Sqlite, SqlitePool, migrate, sqlite::SqlitePoolOptions};
 use tower_http::trace::TraceLayer;
 use tracing::info;
 use utoipa::{
@@ -70,11 +71,20 @@ pub async fn app(
                 .collect::<Vec<_>>(),
         );
 
+    if !Sqlite::database_exists(&config.database_url)
+        .await
+        .unwrap_or(false)
+    {
+        info!("creating database");
+        Sqlite::create_database(&config.database_url).await.unwrap();
+    }
+
+    info!("connecting to database");
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
         .connect(&config.database_url)
         .await
-        .expect("Failed to connect to database");
+        .expect("failed to connect to database");
 
     info!("migrating database");
     migrate!("./migrations")
