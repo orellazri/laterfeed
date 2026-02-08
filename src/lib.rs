@@ -85,7 +85,7 @@ pub async fn app(
 
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .route("/health", get(handlers::health))
-        .route("/feed", get(handlers::get_feed))
+        .routes(routes!(handlers::get_feed))
         .routes(routes!(handlers::add_entry))
         .routes(routes!(handlers::list_entries))
         .with_state(app_state)

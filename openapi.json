@@ -60,6 +60,28 @@
         },
         "security": []
       }
+    },
+    "/feed": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Get Atom feed",
+        "operationId": "getFeed",
+        "responses": {
+          "200": {
+            "description": "Atom XML feed",
+            "content": {
+              "application/atom+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
     }
   },
   "components": {

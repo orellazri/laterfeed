@@ -88,6 +88,17 @@ pub async fn list_entries(State(state): State<AppState>) -> Result<impl IntoResp
     }))
 }
 
+#[utoipa::path(
+    get,
+    path = "/feed",
+    summary = "Get Atom feed",
+    operation_id = "getFeed",
+    tag = FEED_TAG,
+    responses(
+        (status = 200, description = "Atom XML feed", content_type = "application/atom+xml", body = String),
+    ),
+    security(),
+)]
 pub async fn get_feed(State(state): State<AppState>) -> Result<impl IntoResponse> {
     let entries = models::Entry::fetch_latest(&state.pool, feed::entry_limit()).await?;
     let xml = feed::build_atom_feed(&entries, &state.config.base_url);
