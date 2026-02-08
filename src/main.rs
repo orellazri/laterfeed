@@ -22,10 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enable_all()
         .build()?
         .block_on(async {
-            let (router, api, pool) = app(config).await;
-
-            info!("generating openapi.json");
-            std::fs::write("./openapi.json", api.to_pretty_json().unwrap()).unwrap();
+            let (router, _, pool) = app(config).await;
 
             let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
             info!("listening on {}", listener.local_addr().unwrap());
