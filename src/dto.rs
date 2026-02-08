@@ -32,6 +32,7 @@ impl From<EntrySourceType> for models::EntrySourceType {
 
 #[derive(Serialize, Deserialize, ToSchema, Validate)]
 pub struct AddEntryRequest {
+    #[validate(url)]
     pub url: String,
     pub title: Option<String>,
     pub summary: Option<String>,
