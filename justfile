@@ -15,3 +15,4 @@ migrate-create name:
 migrate-up:
     sqlx database create
     sqlx migrate run
+    cargo sqlx prepare
