@@ -6,7 +6,7 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 use laterfeed::app;
 use laterfeed::config::Config;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = envy::from_env::<Config>()?;
     let port = config.port;
 

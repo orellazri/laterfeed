@@ -22,7 +22,7 @@ pub async fn fetch_metadata(url: &str) -> PageMetadata {
     }
 }
 
-async fn fetch_metadata_inner(url: &str) -> anyhow::Result<PageMetadata> {
+async fn fetch_metadata_inner(url: &str) -> Result<PageMetadata, Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(5))
         .build()?;

@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.101"
 atom_syndication = "0.12.7"
 axum = "0.8.8"
 axum-valid = { version = "0.24.0", features = ["into_json"] }
