@@ -91,18 +91,12 @@
       "AddEntryRequest": {
         "type": "object",
         "required": [
-          "url"
+          "url",
+          "source_type"
         ],
         "properties": {
           "source_type": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/EntrySourceType"
-              }
-            ]
+            "$ref": "#/components/schemas/EntrySourceType"
           },
           "summary": {
             "type": [

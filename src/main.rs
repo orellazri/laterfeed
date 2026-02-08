@@ -9,7 +9,6 @@ use laterfeed::config::Config;
 fn main() -> anyhow::Result<()> {
     let config = envy::from_env::<Config>()?;
     let port = config.port;
-    let cors_allowed_origins = config.cors_allowed_origins.clone();
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
@@ -23,7 +22,7 @@ fn main() -> anyhow::Result<()> {
         .enable_all()
         .build()?
         .block_on(async {
-            let (router, api) = app(config, cors_allowed_origins).await;
+            let (router, api) = app(config).await;
 
             info!("generating openapi.json");
             std::fs::write("./openapi.json", api.to_pretty_json().unwrap()).unwrap();

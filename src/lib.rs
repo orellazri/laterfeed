@@ -57,20 +57,7 @@ pub struct AppStateInner {
     pub pool: SqlitePool,
 }
 
-pub async fn app(
-    config: Config,
-    cors_allowed_origins: Vec<String>,
-) -> (axum::Router, utoipa::openapi::OpenApi) {
-    let cors = tower_http::cors::CorsLayer::new()
-        .allow_methods(tower_http::cors::Any)
-        .allow_headers(tower_http::cors::Any)
-        .allow_origin(
-            cors_allowed_origins
-                .iter()
-                .map(|origin| origin.parse().unwrap())
-                .collect::<Vec<_>>(),
-        );
-
+pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi) {
     if !Sqlite::database_exists(&config.database_url)
         .await
         .unwrap_or(false)
@@ -108,7 +95,6 @@ pub async fn app(
         .merge(authenticated_routes)
         .with_state(app_state)
         .layer(TraceLayer::new_for_http())
-        .layer(cors)
         .split_for_parts();
 
     let router = router.merge(Scalar::with_url("/docs", api.clone()));
