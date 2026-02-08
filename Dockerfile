@@ -18,15 +18,9 @@ FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -r -s /bin/false laterfeed
-
 WORKDIR /app
 
 COPY --from=builder /app/target/release/laterfeed ./laterfeed
-
-RUN mkdir /data && chown laterfeed:laterfeed /data
-
-USER laterfeed
 
 EXPOSE 8000
 
