@@ -16,3 +16,7 @@ migrate-up:
     sqlx database create
     sqlx migrate run
     cargo sqlx prepare
+
+# Release a new version:
+release:
+    bash scripts/release.sh
