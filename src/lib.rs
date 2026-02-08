@@ -57,7 +57,7 @@ pub struct AppStateInner {
     pub pool: SqlitePool,
 }
 
-pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi) {
+pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi, SqlitePool) {
     if !Sqlite::database_exists(&config.database_url)
         .await
         .unwrap_or(false)
@@ -79,7 +79,10 @@ pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi) {
         .await
         .expect("failed to migrate database");
 
-    let app_state = AppState::new(AppStateInner { config, pool });
+    let app_state = AppState::new(AppStateInner {
+        config,
+        pool: pool.clone(),
+    });
 
     let authenticated_routes = OpenApiRouter::new()
         .routes(routes!(handlers::add_entry))
@@ -99,5 +102,5 @@ pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi) {
 
     let router = router.merge(Scalar::with_url("/docs", api.clone()));
 
-    (router, api)
+    (router, api, pool)
 }

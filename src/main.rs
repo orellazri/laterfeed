@@ -22,7 +22,7 @@ fn main() -> anyhow::Result<()> {
         .enable_all()
         .build()?
         .block_on(async {
-            let (router, api) = app(config).await;
+            let (router, api, pool) = app(config).await;
 
             info!("generating openapi.json");
             std::fs::write("./openapi.json", api.to_pretty_json().unwrap()).unwrap();
@@ -33,6 +33,9 @@ fn main() -> anyhow::Result<()> {
                 .with_graceful_shutdown(shutdown_signal())
                 .await
                 .unwrap();
+
+            info!("shutting down, closing database connection pool");
+            pool.close().await;
         });
 
     Ok(())
