@@ -70,6 +70,16 @@
           "url"
         ],
         "properties": {
+          "source_type": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EntrySourceType"
+              }
+            ]
+          },
           "summary": {
             "type": [
               "string",

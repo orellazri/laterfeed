@@ -66,4 +66,17 @@ impl Entry {
         .fetch_all(pool)
         .await
     }
+
+    pub async fn fetch_latest(pool: &SqlitePool, limit: i64) -> Result<Vec<Entry>, sqlx::Error> {
+        query_as!(
+            Entry,
+            r#"
+            SELECT id, url, title, summary, source_type, created_at as "created_at: DateTime<Utc>"
+            FROM entries ORDER BY created_at DESC LIMIT ?
+            "#,
+            limit
+        )
+        .fetch_all(pool)
+        .await
+    }
 }

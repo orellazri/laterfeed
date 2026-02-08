@@ -1,10 +1,17 @@
-use axum::{Json, extract::State, response::IntoResponse};
+use axum::{
+    Json,
+    extract::State,
+    http::{StatusCode, header},
+    response::IntoResponse,
+};
 use axum_valid::Valid;
 
 use crate::{
     AppState, FEED_TAG,
     dto::{AddEntryRequest, EntryResponse, ListEntriesResponse},
     errors::Result,
+    feed,
+    metadata,
     models,
 };
 
@@ -27,16 +34,39 @@ pub async fn add_entry(
     State(state): State<AppState>,
     Valid(Json(body)): Valid<Json<AddEntryRequest>>,
 ) -> Result<impl IntoResponse> {
+    let mut title = body.title;
+    let mut summary = body.summary;
+
+    // If title or summary are missing, try to fetch them from the page
+    if title.is_none() || summary.is_none() {
+        let meta = metadata::fetch_metadata(&body.url).await;
+        if title.is_none() {
+            title = meta.title;
+        }
+        if summary.is_none() {
+            summary = meta.summary;
+        }
+    }
+
+    // Fall back to using the URL as the title if still missing
+    let title = title.unwrap_or_else(|| body.url.clone());
+
+    // Use caller-provided source_type, or auto-detect from URL
+    let source_type = body
+        .source_type
+        .map(|st| st.into())
+        .unwrap_or_else(|| metadata::detect_source_type(&body.url));
+
     let entry = models::Entry::create(
         &state.pool,
         &body.url,
-        &body.title.unwrap_or("Untitled".to_string()),
-        body.summary.as_deref(),
-        models::EntrySourceType::Article,
+        &title,
+        summary.as_deref(),
+        source_type,
     )
     .await?;
 
-    Ok(Json(EntryResponse::from(entry)))
+    Ok((StatusCode::CREATED, Json(EntryResponse::from(entry))))
 }
 
 #[utoipa::path(
@@ -56,4 +86,14 @@ pub async fn list_entries(State(state): State<AppState>) -> Result<impl IntoResp
     Ok(Json(ListEntriesResponse {
         entries: entries.into_iter().map(|e| e.into()).collect(),
     }))
+}
+
+pub async fn get_feed(State(state): State<AppState>) -> Result<impl IntoResponse> {
+    let entries = models::Entry::fetch_latest(&state.pool, feed::entry_limit()).await?;
+    let xml = feed::build_atom_feed(&entries, &state.config.base_url);
+
+    Ok((
+        [(header::CONTENT_TYPE, "application/atom+xml; charset=utf-8")],
+        xml,
+    ))
 }

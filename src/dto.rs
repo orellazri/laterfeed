@@ -21,11 +21,21 @@ impl From<models::EntrySourceType> for EntrySourceType {
     }
 }
 
+impl From<EntrySourceType> for models::EntrySourceType {
+    fn from(source_type: EntrySourceType) -> Self {
+        match source_type {
+            EntrySourceType::Article => models::EntrySourceType::Article,
+            EntrySourceType::Video => models::EntrySourceType::Video,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, ToSchema, Validate)]
 pub struct AddEntryRequest {
     pub url: String,
     pub title: Option<String>,
     pub summary: Option<String>,
+    pub source_type: Option<EntrySourceType>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]

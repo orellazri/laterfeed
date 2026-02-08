@@ -5,10 +5,13 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.101"
+atom_syndication = "0.12.7"
 axum = "0.8.8"
 axum-valid = { version = "0.24.0", features = ["into_json"] }
 chrono = { version = "0.4.43", features = ["serde"] }
 envy = "0.4.2"
+reqwest = "0.13.2"
+scraper = "0.25.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 sqlx = { version = "0.8.6", features = ["chrono", "runtime-tokio", "sqlite", "macros"] }
