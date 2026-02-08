@@ -20,8 +20,16 @@ There's also a Chrome extension for saving pages directly from the browser.
 
 ### Run with Docker (Recommended)
 
+Generate an authentication token using this method or any other method that you prefer:
+
 ```bash
-docker run -p 8000:8000 \
+openssl rand -hex 32
+```
+
+Run the container:
+
+```bash
+docker run -d -p 8000:8000 \
   -v $(pwd)/data:/data \
   -e PORT=8000 \
   -e DATABASE_URL=sqlite:/data/data.db \
