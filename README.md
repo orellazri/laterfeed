@@ -47,6 +47,16 @@ Laterfeed is configured via environment variables:
 | `BASE_URL`     | Public URL of the server (used in feed links) | `http://localhost:8000` |
 | `AUTH_TOKEN`   | Bearer token for authenticated endpoints      | `changeme`              |
 
+## API Routes
+
+| Method | Path       | Auth | Description                       |
+| ------ | ---------- | ---- | --------------------------------- |
+| `GET`  | `/health`  | No   | Health check                      |
+| `GET`  | `/feed`    | No   | Get saved entries as an Atom feed |
+| `GET`  | `/entries` | No   | List all entries as JSON          |
+| `POST` | `/entries` | Yes  | Add a new entry                   |
+| `GET`  | `/docs`    | No   | Interactive OpenAPI documentation |
+
 ## Development
 
 Requires [Rust](https://www.rust-lang.org/tools/install) and [just](https://github.com/casey/just).
