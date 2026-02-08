@@ -13,7 +13,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -27,12 +27,33 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and Push Docker image
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v5
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-cache
+
+      - name: Set version tag
         run: |
           VERSION_TAG=${GITHUB_REF#refs/tags/v}
-          docker buildx build --push --platform linux/amd64,linux/arm64/v8 \
-            --tag reaperberri/laterfeed:latest \
-            --tag reaperberri/laterfeed:${VERSION_TAG} .
+          echo "VERSION_TAG=${VERSION_TAG}"
+          echo "VERSION_TAG=${VERSION_TAG}" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm64/v8
+          tags: |
+            reaperberri/laterfeed:latest
+            reaperberri/laterfeed:${{ env.VERSION_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: Move cache to original location
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
