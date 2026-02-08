@@ -53,4 +53,4 @@ USER appuser
 
 COPY --from=builder /app/target/release/laterfeed /usr/local/bin/laterfeed
 
-CMD [ "/usr/local/bin/laterfeed" ]
+ENTRYPOINT ["/usr/local/bin/laterfeed"]
