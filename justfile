@@ -21,6 +21,10 @@ migrate-up:
     sqlx migrate run
     cargo sqlx prepare
 
-# Release a new version:
+# Release a new version
 release:
     bash scripts/release.sh
+
+# Release a new version of the extension
+release-extension:
+    bash scripts/release-extension.sh
