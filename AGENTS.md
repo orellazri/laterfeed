@@ -10,4 +10,5 @@ Chrome Extension lives under `extension/chrome`.
 
 - When adding dependencies, use `cargo add` to get the latest versions. Do not update `Cargo.toml` manually.
 - After making changes, run `cargo clippy` and fix any issues.
-- After making chages, run the tests using `cargo test`.
+- After making chages, run the tests using `just test`.
+- To create database migrations, just `just migrate-create <name>`.
