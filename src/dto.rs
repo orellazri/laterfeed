@@ -35,7 +35,6 @@ pub struct AddEntryRequest {
     #[validate(url)]
     pub url: String,
     pub title: Option<String>,
-    pub summary: Option<String>,
     pub source_type: EntrySourceType,
 }
 
@@ -44,7 +43,7 @@ pub struct EntryResponse {
     pub id: i64,
     pub url: String,
     pub title: String,
-    pub summary: Option<String>,
+    pub body: Option<String>,
     pub source_type: EntrySourceType,
     pub created_at: DateTime<Utc>,
 }
@@ -55,7 +54,7 @@ impl From<models::Entry> for EntryResponse {
             id: entry.id,
             url: entry.url,
             title: entry.title,
-            summary: entry.summary,
+            body: entry.body,
             source_type: entry.source_type.into(),
             created_at: entry.created_at,
         }
@@ -79,7 +78,7 @@ mod tests {
             id: 42,
             url: "https://example.com".to_string(),
             title: "Test Title".to_string(),
-            summary: Some("Test Summary".to_string()),
+            body: Some("Test Body".to_string()),
             source_type: models::EntrySourceType::Video,
             created_at: now,
         };
@@ -89,7 +88,7 @@ mod tests {
         assert_eq!(response.id, 42);
         assert_eq!(response.url, "https://example.com");
         assert_eq!(response.title, "Test Title");
-        assert_eq!(response.summary, Some("Test Summary".to_string()));
+        assert_eq!(response.body, Some("Test Body".to_string()));
         assert!(matches!(response.source_type, EntrySourceType::Video));
         assert_eq!(response.created_at, now);
     }

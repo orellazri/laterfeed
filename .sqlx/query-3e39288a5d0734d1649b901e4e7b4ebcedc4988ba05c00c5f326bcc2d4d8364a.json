@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, url, title, summary, source_type, created_at as \"created_at: DateTime<Utc>\"\n            FROM entries ORDER BY created_at DESC LIMIT ?\n            ",
+  "query": "\n            SELECT id, url, title, body, source_type, created_at as \"created_at: DateTime<Utc>\"\n            FROM entries ORDER BY created_at DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -19,7 +19,7 @@
         "type_info": "Text"
       },
       {
-        "name": "summary",
+        "name": "body",
         "ordinal": 3,
         "type_info": "Text"
       },
@@ -35,7 +35,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 0
     },
     "nullable": [
       false,
@@ -46,5 +46,5 @@
       false
     ]
   },
-  "hash": "73715862ca11aebea8bdcb82364fa91829e82829dbe36bc91669cf1f3cab7f39"
+  "hash": "3e39288a5d0734d1649b901e4e7b4ebcedc4988ba05c00c5f326bcc2d4d8364a"
 }

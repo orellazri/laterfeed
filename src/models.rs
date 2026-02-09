@@ -24,7 +24,7 @@ pub struct Entry {
     pub id: i64,
     pub url: String,
     pub title: String,
-    pub summary: Option<String>,
+    pub body: Option<String>,
     pub source_type: EntrySourceType,
     pub created_at: DateTime<Utc>,
 }
@@ -34,7 +34,7 @@ impl Entry {
         pool: &SqlitePool,
         url: &str,
         title: &str,
-        summary: Option<&str>,
+        body: Option<&str>,
         source_type: EntrySourceType,
     ) -> Result<Entry, sqlx::Error> {
         let now = Utc::now();
@@ -42,12 +42,12 @@ impl Entry {
         query_as!(
             Entry,
             r#"
-            INSERT INTO entries (url, title, summary, source_type, created_at) VALUES (?, ?, ?, ?, ?)
-            RETURNING id, url, title, summary, source_type, created_at as "created_at: DateTime<Utc>"
+            INSERT INTO entries (url, title, body, source_type, created_at) VALUES (?, ?, ?, ?, ?)
+            RETURNING id, url, title, body, source_type, created_at as "created_at: DateTime<Utc>"
             "#,
             url,
             title,
-            summary,
+            body,
             source_type,
             now
         )
@@ -59,7 +59,7 @@ impl Entry {
         query_as!(
             Entry,
             r#"
-            SELECT id, url, title, summary, source_type, created_at as "created_at: DateTime<Utc>"
+            SELECT id, url, title, body, source_type, created_at as "created_at: DateTime<Utc>"
             FROM entries ORDER BY created_at DESC
             "#
         )
@@ -71,7 +71,7 @@ impl Entry {
         query_as!(
             Entry,
             r#"
-            SELECT id, url, title, summary, source_type, created_at as "created_at: DateTime<Utc>"
+            SELECT id, url, title, body, source_type, created_at as "created_at: DateTime<Utc>"
             FROM entries ORDER BY created_at DESC LIMIT ?
             "#,
             limit

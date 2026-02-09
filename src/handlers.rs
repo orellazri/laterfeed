@@ -35,18 +35,13 @@ pub async fn add_entry(
     Valid(Json(body)): Valid<Json<AddEntryRequest>>,
 ) -> Result<impl IntoResponse> {
     let mut title = body.title;
-    let mut summary = body.summary;
 
-    // If title or summary are missing, try to fetch them from the page
-    if title.is_none() || summary.is_none() {
-        let meta = metadata::fetch_metadata(&body.url).await;
-        if title.is_none() {
-            title = meta.title;
-        }
-        if summary.is_none() {
-            summary = meta.summary;
-        }
+    // Fetch metadata from the page for title (if missing) and body content
+    let meta = metadata::fetch_metadata(&body.url).await;
+    if title.is_none() {
+        title = meta.title;
     }
+    let page_body = meta.body;
 
     // Fall back to using the URL as the title if still missing
     let title = title.unwrap_or_else(|| body.url.clone());
@@ -57,7 +52,7 @@ pub async fn add_entry(
         &state.pool,
         &body.url,
         &title,
-        summary.as_deref(),
+        page_body.as_deref(),
         source_type,
     )
     .await?;

@@ -75,7 +75,6 @@ async fn add_entry_with_valid_auth_creates_entry() {
     let body = json!({
         "url": "https://example.com/test-article",
         "title": "Test Article",
-        "summary": "A test summary",
         "source_type": "article"
     });
 
@@ -97,7 +96,6 @@ async fn add_entry_with_valid_auth_creates_entry() {
 
     assert_eq!(json["url"], "https://example.com/test-article");
     assert_eq!(json["title"], "Test Article");
-    assert_eq!(json["summary"], "A test summary");
     assert_eq!(json["source_type"], "article");
     assert!(json["id"].is_number());
     assert!(json["created_at"].is_string());
@@ -150,7 +148,6 @@ async fn list_entries_returns_created_entries() {
     let add_body = json!({
         "url": "https://example.com/listed",
         "title": "Listed Entry",
-        "summary": "Should appear in list",
         "source_type": "article"
     });
 
@@ -228,7 +225,6 @@ async fn get_feed_includes_created_entries() {
     let add_body = json!({
         "url": "https://example.com/feed-item",
         "title": "Feed Item",
-        "summary": "In the feed",
         "source_type": "article"
     });
 
@@ -255,5 +251,4 @@ async fn get_feed_includes_created_entries() {
 
     assert!(xml.contains("<title>Feed Item</title>"));
     assert!(xml.contains("https://example.com/feed-item"));
-    assert!(xml.contains("In the feed"));
 }

@@ -1,4 +1,4 @@
-use atom_syndication::{Entry as AtomEntry, Feed as AtomFeed, FixedDateTime, Link, Text};
+use atom_syndication::{Content, Entry as AtomEntry, Feed as AtomFeed, FixedDateTime, Link, Text};
 use chrono::Utc;
 
 use crate::models::Entry;
@@ -59,8 +59,12 @@ fn entry_to_atom(entry: &Entry) -> AtomEntry {
         ..Default::default()
     };
 
-    if let Some(ref summary) = entry.summary {
-        atom_entry.summary = Some(Text::plain(summary));
+    if let Some(ref body) = entry.body {
+        atom_entry.content = Some(Content {
+            value: Some(body.clone()),
+            content_type: Some("html".to_string()),
+            ..Default::default()
+        });
     }
 
     atom_entry
@@ -72,12 +76,12 @@ mod tests {
     use crate::models::EntrySourceType;
     use chrono::TimeZone;
 
-    fn make_entry(id: i64, url: &str, title: &str, summary: Option<&str>) -> Entry {
+    fn make_entry(id: i64, url: &str, title: &str, body: Option<&str>) -> Entry {
         Entry {
             id,
             url: url.to_string(),
             title: title.to_string(),
-            summary: summary.map(|s| s.to_string()),
+            body: body.map(|s| s.to_string()),
             source_type: EntrySourceType::Article,
             created_at: Utc.with_ymd_and_hms(2026, 1, 15, 12, 0, 0).unwrap(),
         }
@@ -95,11 +99,11 @@ mod tests {
     }
 
     #[test]
-    fn build_atom_feed_multiple_entries_with_and_without_summary() {
+    fn build_atom_feed_multiple_entries_with_and_without_body() {
         let entries = vec![
-            make_entry(1, "https://example.com/a", "First", Some("Summary A")),
+            make_entry(1, "https://example.com/a", "First", Some("<p>Body A</p>")),
             make_entry(2, "https://example.com/b", "Second", None),
-            make_entry(3, "https://example.com/c", "Third", Some("Summary C")),
+            make_entry(3, "https://example.com/c", "Third", Some("<p>Body C</p>")),
         ];
 
         let xml = build_atom_feed(&entries, "https://example.com");
@@ -109,9 +113,12 @@ mod tests {
         assert!(xml.contains("<title>Second</title>"));
         assert!(xml.contains("<title>Third</title>"));
 
-        // Summaries included where provided
-        assert!(xml.contains("Summary A"));
-        assert!(xml.contains("Summary C"));
+        // Body content included where provided
+        assert!(xml.contains("Body A"));
+        assert!(xml.contains("Body C"));
+
+        // Content type should be html
+        assert!(xml.contains(r#"type="html""#));
 
         // Feed updated time should come from the first entry
         assert!(xml.contains("2026-01-15"));
@@ -123,7 +130,7 @@ mod tests {
             10,
             "https://example.com/article",
             "Test Article",
-            Some("Test description"),
+            Some("<p>Test body</p>"),
         );
 
         let atom = entry_to_atom(&entry);
@@ -133,6 +140,8 @@ mod tests {
         assert_eq!(atom.links.len(), 1);
         assert_eq!(atom.links[0].href, "https://example.com/article");
         assert_eq!(atom.links[0].rel, "alternate");
-        assert_eq!(atom.summary.unwrap().value, "Test description");
+        let content = atom.content.unwrap();
+        assert_eq!(content.value.unwrap(), "<p>Test body</p>");
+        assert_eq!(content.content_type.unwrap(), "html");
     }
 }

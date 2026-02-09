@@ -2,7 +2,6 @@ const setupPrompt = document.getElementById("setupPrompt");
 const mainForm = document.getElementById("mainForm");
 const urlInput = document.getElementById("url");
 const titleInput = document.getElementById("title");
-const summaryInput = document.getElementById("summary");
 const sourceTypeSelect = document.getElementById("sourceType");
 const saveBtn = document.getElementById("saveBtn");
 const statusEl = document.getElementById("status");
@@ -54,13 +53,11 @@ saveBtn.addEventListener("click", async () => {
   }
 
   const title = titleInput.value.trim() || null;
-  const summary = summaryInput.value.trim() || null;
   const sourceType = sourceTypeSelect.value;
 
   const body = {
     url,
     title,
-    summary,
     source_type: sourceType,
   };
 
