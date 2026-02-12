@@ -2,7 +2,7 @@
 
 **Laterfeed** lets you save articles and videos to read or watch later.<br>
 It exposes your saved links as an <a href="<https://en.wikipedia.org/wiki/Atom_(web_standard)>)">Atom feed</a>, so you can consume them in any RSS reader.<br>
-There's also a Chrome extension for saving pages directly from the browser.
+There's also a [Chrome extension](https://chromewebstore.google.com/detail/laterfeed/lehgeakcddcjigboiegoogbgaohcfhfn) for saving pages directly from the browser.
 
 <br>
 
@@ -11,7 +11,7 @@ There's also a Chrome extension for saving pages directly from the browser.
 - Save articles and videos with a single API call
 - Automatic metadata extraction (title and description) from saved URLs
 - Atom feed generation for use with any RSS reader
-- Chrome extension for one-click saving from the browser
+- [Chrome extension](https://chromewebstore.google.com/detail/laterfeed/lehgeakcddcjigboiegoogbgaohcfhfn) for one-click saving from the browser
 - OpenAPI documentation with interactive Scalar UI at `/docs`
 - Simple token authentication
 - SQLite database - no external dependencies
