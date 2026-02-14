@@ -2,7 +2,6 @@
 
 **Laterfeed** lets you save articles and videos to read or watch later.<br>
 It exposes your saved links as an <a href="<https://en.wikipedia.org/wiki/Atom_(web_standard)>)">Atom feed</a>, so you can consume them in any RSS reader.<br>
-There's also a [Chrome extension](https://chromewebstore.google.com/detail/laterfeed/lehgeakcddcjigboiegoogbgaohcfhfn) for saving pages directly from the browser.
 
 <br>
 
