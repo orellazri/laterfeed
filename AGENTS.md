@@ -4,7 +4,7 @@ Laterfeed is an application that serves as a "read-it-later" and "watch-it-later
 
 Tech Stack: Rust, Axum, SQLx (SQLite), Utoipa (OpenAPI)
 
-Chrome Extension lives under `extension/chrome`.
+Chrome extension lives under `extension/chrome`. Firefox extension lives under `extension/firefox`.
 
 ## Important Notes
 
