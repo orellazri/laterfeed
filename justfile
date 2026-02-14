@@ -25,6 +25,6 @@ migrate-up:
 release:
     bash scripts/release.sh
 
-# Release a new version of the extension
-release-extension:
-    bash scripts/release-extension.sh
+# Release a new version of the extension (chrome or firefox)
+release-extension browser:
+    bash scripts/release-extension.sh {{ browser }}

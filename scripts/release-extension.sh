@@ -2,9 +2,20 @@
 
 set -euo pipefail
 
-MANIFEST="extension/chrome/manifest.json"
+BROWSER="${1:-}"
 
-# Get current version from manifest
+if [[ -z "$BROWSER" ]]; then
+	echo "Usage: release-extension.sh <chrome|firefox>"
+	exit 1
+fi
+
+if [[ "$BROWSER" != "chrome" && "$BROWSER" != "firefox" ]]; then
+	echo "Error: Browser must be one of: chrome, firefox"
+	exit 1
+fi
+
+# Get current version from the manifest
+MANIFEST="extension/${BROWSER}/manifest.json"
 CURRENT_VERSION=$(grep -o '"version": "[^"]*"' "$MANIFEST" | head -1 | cut -d'"' -f4)
 echo "Current extension version: $CURRENT_VERSION"
 
@@ -28,6 +39,7 @@ fi
 echo "Updated $MANIFEST to version $VERSION"
 
 # Create zip
-cd extension/chrome && zip -r ../../laterfeed-chrome-extension.zip .
+mkdir -p dist
+(cd "extension/$BROWSER" && zip -r "../../dist/laterfeed-${BROWSER}-extension.zip" .)
 
-echo "Created laterfeed-chrome-extension.zip"
+echo "Created dist/laterfeed-${BROWSER}-extension.zip"

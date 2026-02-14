@@ -12,3 +12,4 @@ Chrome Extension lives under `extension/chrome`.
 - After making changes, run `cargo clippy` and fix any issues.
 - After making chages, run the tests using `just test`.
 - To create database migrations, just `just migrate-create <name>`.
+- When updating code in one extension (Chrome/Firefox), make sure to also make the same changes in the other extesnsion so they're aligned.
