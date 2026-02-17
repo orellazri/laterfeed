@@ -13,6 +13,7 @@ async fn setup_app() -> axum::Router {
         database_url: "sqlite::memory:".to_string(),
         base_url: "http://localhost:3000".to_string(),
         auth_token: "test-token".to_string(),
+        ..Default::default()
     };
 
     let (router, _, _) = laterfeed::app(config).await;
@@ -140,6 +141,7 @@ async fn list_entries_returns_created_entries() {
         database_url: "sqlite::memory:".to_string(),
         base_url: "http://localhost:3000".to_string(),
         auth_token: "test-token".to_string(),
+        ..Default::default()
     };
 
     let (router, _, _) = laterfeed::app(config).await;
@@ -217,6 +219,7 @@ async fn get_feed_includes_created_entries() {
         database_url: "sqlite::memory:".to_string(),
         base_url: "http://localhost:3000".to_string(),
         auth_token: "test-token".to_string(),
+        ..Default::default()
     };
 
     let (router, _, _) = laterfeed::app(config).await;
@@ -251,4 +254,102 @@ async fn get_feed_includes_created_entries() {
 
     assert!(xml.contains("<title>Feed Item</title>"));
     assert!(xml.contains("https://example.com/feed-item"));
+}
+
+// --- Delete entry ---
+
+#[tokio::test]
+async fn delete_entry_without_auth_returns_unauthorized() {
+    let app = setup_app().await;
+
+    let response = app
+        .oneshot(
+            Request::delete("/entries/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn delete_entry_nonexistent_returns_not_found() {
+    let app = setup_app().await;
+
+    let response = app
+        .oneshot(
+            Request::delete("/entries/999")
+                .header(header::AUTHORIZATION, "Bearer test-token")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn delete_entry_removes_entry() {
+    let config = Config {
+        port: 0,
+        database_url: "sqlite::memory:".to_string(),
+        base_url: "http://localhost:3000".to_string(),
+        auth_token: "test-token".to_string(),
+        ..Default::default()
+    };
+
+    let (router, _, _) = laterfeed::app(config).await;
+
+    // Add an entry
+    let add_body = json!({
+        "url": "https://example.com/to-delete",
+        "title": "Delete Me",
+        "source_type": "article"
+    });
+
+    let response = router
+        .clone()
+        .oneshot(
+            Request::post("/entries")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(header::AUTHORIZATION, "Bearer test-token")
+                .body(Body::from(serde_json::to_string(&add_body).unwrap()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::CREATED);
+
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    let id = json["id"].as_i64().unwrap();
+
+    // Delete the entry
+    let response = router
+        .clone()
+        .oneshot(
+            Request::delete(format!("/entries/{id}"))
+                .header(header::AUTHORIZATION, "Bearer test-token")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+    // Verify it's gone from the list
+    let response = router
+        .oneshot(Request::get("/entries").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+
+    let body = response.into_body().collect().await.unwrap().to_bytes();
+    let json: Value = serde_json::from_slice(&body).unwrap();
+    let entries = json["entries"].as_array().unwrap();
+    assert!(entries.is_empty());
 }

@@ -13,6 +13,9 @@ pub enum Error {
     #[error("Unauthorized")]
     Unauthorized,
 
+    #[error("Not found")]
+    NotFound,
+
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
 }
@@ -21,6 +24,7 @@ impl Error {
     pub fn status_code(&self) -> StatusCode {
         match self {
             Error::Unauthorized => StatusCode::UNAUTHORIZED,
+            Error::NotFound => StatusCode::NOT_FOUND,
             Error::Database(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

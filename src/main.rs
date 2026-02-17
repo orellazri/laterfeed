@@ -3,7 +3,7 @@ use tokio::signal;
 use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-use laterfeed::app;
+use laterfeed::{app, cleanup};
 use laterfeed::config::Config;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,11 +18,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
+    let retention_days = config.retention_days;
+    let max_entries = config.max_entries;
+
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?
         .block_on(async {
             let (router, _, pool) = app(config).await;
+
+            cleanup::start_cleanup_task(pool.clone(), retention_days, max_entries);
 
             let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
             info!("listening on {}", listener.local_addr().unwrap());

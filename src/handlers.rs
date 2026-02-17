@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::State,
+    extract::{Path, State},
     http::{StatusCode, header},
     response::IntoResponse,
 };
@@ -9,7 +9,7 @@ use axum_valid::Valid;
 use crate::{
     AppState, FEED_TAG,
     dto::{AddEntryRequest, EntryResponse, ListEntriesResponse},
-    errors::Result,
+    errors::{Error, Result},
     feed, metadata, models,
 };
 
@@ -96,4 +96,34 @@ pub async fn get_feed(State(state): State<AppState>) -> Result<impl IntoResponse
         [(header::CONTENT_TYPE, "application/atom+xml; charset=utf-8")],
         xml,
     ))
+}
+
+#[utoipa::path(
+    delete,
+    path = "/entries/{id}",
+    summary = "Delete an entry",
+    operation_id = "deleteEntry",
+    tag = FEED_TAG,
+    params(
+        ("id" = i64, Path, description = "Entry ID"),
+    ),
+    responses(
+        (status = 204, description = "Entry deleted"),
+        (status = 404, description = "Entry not found"),
+    ),
+    security(
+        ("bearer" = [])
+    )
+)]
+pub async fn delete_entry(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<impl IntoResponse> {
+    let deleted = models::Entry::delete_by_id(&state.pool, id).await?;
+
+    if deleted {
+        Ok(StatusCode::NO_CONTENT)
+    } else {
+        Err(Error::NotFound)
+    }
 }

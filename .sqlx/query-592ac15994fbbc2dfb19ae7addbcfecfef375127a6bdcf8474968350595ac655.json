@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM entries WHERE created_at < ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "592ac15994fbbc2dfb19ae7addbcfecfef375127a6bdcf8474968350595ac655"
+}

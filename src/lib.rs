@@ -15,6 +15,7 @@ use utoipa_scalar::{Scalar, Servable};
 use crate::config::Config;
 
 mod auth;
+pub mod cleanup;
 pub mod config;
 mod dto;
 mod errors;
@@ -86,6 +87,7 @@ pub async fn app(config: Config) -> (axum::Router, utoipa::openapi::OpenApi, Sql
 
     let authenticated_routes = OpenApiRouter::new()
         .routes(routes!(handlers::add_entry))
+        .routes(routes!(handlers::delete_entry))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             auth::auth_guard,

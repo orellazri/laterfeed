@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, query_as, sqlite::SqlitePool};
+use sqlx::{FromRow, query, query_as, sqlite::SqlitePool};
 
 #[derive(sqlx::Type, Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(i64)]
@@ -78,6 +78,40 @@ impl Entry {
         )
         .fetch_all(pool)
         .await
+    }
+
+    /// Delete an entry by ID. Returns true if an entry was deleted, false if not found.
+    pub async fn delete_by_id(pool: &SqlitePool, id: i64) -> Result<bool, sqlx::Error> {
+        let result = query!("DELETE FROM entries WHERE id = ?", id)
+            .execute(pool)
+            .await?;
+        Ok(result.rows_affected() > 0)
+    }
+
+    /// Delete entries older than the given cutoff datetime. Returns the number of entries deleted.
+    pub async fn delete_older_than(
+        pool: &SqlitePool,
+        cutoff: DateTime<Utc>,
+    ) -> Result<u64, sqlx::Error> {
+        let result = query!("DELETE FROM entries WHERE created_at < ?", cutoff)
+            .execute(pool)
+            .await?;
+        Ok(result.rows_affected())
+    }
+
+    /// Delete entries beyond the N most recent. Returns the number of entries deleted.
+    pub async fn delete_beyond_limit(pool: &SqlitePool, max: u32) -> Result<u64, sqlx::Error> {
+        let result = query!(
+            r#"
+            DELETE FROM entries WHERE id NOT IN (
+                SELECT id FROM entries ORDER BY created_at DESC LIMIT ?
+            )
+            "#,
+            max
+        )
+        .execute(pool)
+        .await?;
+        Ok(result.rows_affected())
     }
 }
 

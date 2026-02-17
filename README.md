@@ -39,22 +39,34 @@ docker run -d -p 8000:8000 \
 
 Laterfeed is configured via environment variables:
 
-| Variable       | Description                                   | Example                 |
-| -------------- | --------------------------------------------- | ----------------------- |
-| `PORT`         | Port the server listens on                    | `8000`                  |
-| `DATABASE_URL` | SQLite connection string                      | `sqlite:data.db`        |
-| `BASE_URL`     | Public URL of the server (used in feed links) | `http://localhost:8000` |
-| `AUTH_TOKEN`   | Bearer token for authenticated endpoints      | `changeme`              |
+| Variable         | Description                                              | Example                 |
+| ---------------- | -------------------------------------------------------- | ----------------------- |
+| `PORT`           | Port the server listens on                               | `8000`                  |
+| `DATABASE_URL`   | SQLite connection string                                 | `sqlite:data.db`        |
+| `BASE_URL`       | Public URL of the server (used in feed links)            | `http://localhost:8000` |
+| `AUTH_TOKEN`     | Bearer token for authenticated endpoints                 | `changeme`              |
+| `RETENTION_DAYS` | Auto-delete entries older than this many days (optional) | `30`                    |
+| `MAX_ENTRIES`    | Keep only the N most recent entries (optional)           | `500`                   |
 
-## API Routes
+### API Routes
 
-| Method | Path       | Auth | Description                       |
-| ------ | ---------- | ---- | --------------------------------- |
-| `GET`  | `/health`  | No   | Health check                      |
-| `GET`  | `/feed`    | No   | Get saved entries as an Atom feed |
-| `GET`  | `/entries` | No   | List all entries as JSON          |
-| `POST` | `/entries` | Yes  | Add a new entry                   |
-| `GET`  | `/docs`    | No   | Interactive OpenAPI documentation |
+| Method   | Path            | Auth | Description                       |
+| -------- | --------------- | ---- | --------------------------------- |
+| `GET`    | `/health`       | No   | Health check                      |
+| `GET`    | `/feed`         | No   | Get saved entries as an Atom feed |
+| `GET`    | `/entries`      | No   | List all entries as JSON          |
+| `POST`   | `/entries`      | Yes  | Add a new entry                   |
+| `DELETE` | `/entries/{id}` | Yes  | Delete an entry                   |
+| `GET`    | `/docs`         | No   | Interactive OpenAPI documentation |
+
+### Retention / Cleanup
+
+By default, saved entries are kept forever. You can configure automatic cleanup using these optional environment variables:
+
+- **`RETENTION_DAYS`** - Entries older than this many days are automatically deleted. Set to `0` or leave unset to disable.
+- **`MAX_ENTRIES`** - Only the N most recent entries are kept. Older entries beyond this limit are automatically deleted. Set to `0` or leave unset to disable.
+
+Both options can be used together. The cleanup task runs every hour in the background. Entries can also be deleted manually via the `DELETE /entries/{id}` endpoint.
 
 ## Development
 
