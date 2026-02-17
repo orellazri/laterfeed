@@ -1,15 +1,26 @@
 use std::time::Duration;
 
 use scraper::{Html, Selector};
+use url::Url;
 
 pub struct PageMetadata {
     pub title: Option<String>,
     pub body: Option<String>,
 }
 
+#[derive(serde::Deserialize)]
+struct YouTubeOEmbed {
+    title: String,
+}
+
 /// Fetch metadata (title and body content) from a URL by downloading and parsing the HTML.
+/// Uses YouTube oEmbed API for YouTube URLs to reliably extract video titles.
 /// Returns `None` values on any failure (network error, parse error, missing elements).
 pub async fn fetch_metadata(url: &str) -> PageMetadata {
+    if is_youtube_url(url) {
+        return fetch_youtube_metadata(url).await;
+    }
+
     match fetch_metadata_inner(url).await {
         Ok(meta) => meta,
         Err(e) => {
@@ -22,7 +33,68 @@ pub async fn fetch_metadata(url: &str) -> PageMetadata {
     }
 }
 
-async fn fetch_metadata_inner(url: &str) -> Result<PageMetadata, Box<dyn std::error::Error>> {
+/// YouTube pages often return broken titles (e.g. "- YouTube") when scraped directly.
+/// Use the oEmbed API for the title and regular HTML scrape for body, in parallel.
+async fn fetch_youtube_metadata(url: &str) -> PageMetadata {
+    let (oembed_result, page_result) = tokio::join!(
+        fetch_youtube_oembed(url),
+        fetch_metadata_inner(url),
+    );
+
+    let (page_title, body) = match page_result {
+        Ok(meta) => (meta.title, meta.body),
+        Err(_) => (None, None),
+    };
+
+    let title = match oembed_result {
+        Ok(oembed) => Some(oembed.title),
+        Err(e) => {
+            tracing::warn!("Failed to fetch YouTube oEmbed for {}: {}", url, e);
+            page_title
+        }
+    };
+
+    PageMetadata { title, body }
+}
+
+async fn fetch_youtube_oembed(url: &str) -> Result<YouTubeOEmbed, Box<dyn std::error::Error + Send + Sync>> {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(5))
+        .build()?;
+
+    let mut oembed_url = Url::parse("https://www.youtube.com/oembed")?;
+    oembed_url.query_pairs_mut()
+        .append_pair("url", url)
+        .append_pair("format", "json");
+
+    let response = client
+        .get(oembed_url.as_str())
+        .send()
+        .await?
+        .error_for_status()?;
+
+    let text = response.text().await?;
+    Ok(serde_json::from_str(&text)?)
+}
+
+fn is_youtube_url(url_str: &str) -> bool {
+    let Ok(parsed) = Url::parse(url_str) else {
+        return false;
+    };
+
+    matches!(
+        parsed.host_str(),
+        Some(
+            "youtube.com"
+                | "www.youtube.com"
+                | "m.youtube.com"
+                | "music.youtube.com"
+                | "youtu.be"
+        )
+    )
+}
+
+async fn fetch_metadata_inner(url: &str) -> Result<PageMetadata, Box<dyn std::error::Error + Send + Sync>> {
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(5))
         .build()?;
@@ -108,6 +180,81 @@ mod tests {
 
     fn parse(html: &str) -> Html {
         Html::parse_document(html)
+    }
+
+    // --- is_youtube_url tests ---
+
+    #[test]
+    fn is_youtube_url_www() {
+        assert!(is_youtube_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_no_www() {
+        assert!(is_youtube_url("https://youtube.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_mobile() {
+        assert!(is_youtube_url("https://m.youtube.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_music() {
+        assert!(is_youtube_url("https://music.youtube.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_short_link() {
+        assert!(is_youtube_url("https://youtu.be/dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_shorts() {
+        assert!(is_youtube_url("https://www.youtube.com/shorts/dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_embed() {
+        assert!(is_youtube_url("https://www.youtube.com/embed/dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_live() {
+        assert!(is_youtube_url("https://www.youtube.com/live/dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_http() {
+        assert!(is_youtube_url("http://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_with_extra_params() {
+        assert!(is_youtube_url(
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=120&list=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf"
+        ));
+    }
+
+    #[test]
+    fn is_youtube_url_rejects_non_youtube() {
+        assert!(!is_youtube_url("https://example.com/watch?v=dQw4w9WgXcQ"));
+    }
+
+    #[test]
+    fn is_youtube_url_rejects_similar_domains() {
+        assert!(!is_youtube_url("https://notyoutube.com/watch?v=abc"));
+        assert!(!is_youtube_url("https://youtube.com.evil.com/watch?v=abc"));
+    }
+
+    #[test]
+    fn is_youtube_url_rejects_invalid_url() {
+        assert!(!is_youtube_url("not a url"));
+    }
+
+    #[test]
+    fn is_youtube_url_channel_page() {
+        assert!(is_youtube_url("https://www.youtube.com/@somechannel"));
     }
 
     // --- extract_title tests ---
