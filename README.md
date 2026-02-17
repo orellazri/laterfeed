@@ -10,7 +10,7 @@ It exposes your saved links as an <a href="<https://en.wikipedia.org/wiki/Atom_(
 - Save articles and videos with a single API call
 - Automatic metadata extraction (title and description) from saved URLs
 - Atom feed generation for use with any RSS reader
-- [Chrome extension](https://chromewebstore.google.com/detail/laterfeed/lehgeakcddcjigboiegoogbgaohcfhfn) for one-click saving from the browser
+- [Chrome](https://chromewebstore.google.com/detail/laterfeed/lehgeakcddcjigboiegoogbgaohcfhfn) & [Firefox](https://addons.mozilla.org/en-US/firefox/addon/laterfeed/) extensions for one-click saving from the browser
 - OpenAPI documentation with interactive Scalar UI at `/docs`
 - Simple token authentication
 - SQLite database - no external dependencies
