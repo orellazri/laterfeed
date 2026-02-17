@@ -4,7 +4,7 @@ use chrono::Utc;
 use sqlx::SqlitePool;
 use tracing::{error, info};
 
-const CLEANUP_INTERVAL_SECS: u64 = 10800; // 3 hours
+const CLEANUP_INTERVAL_SECS: u64 = 43_200; // 12 hours
 
 /// Starts the background cleanup task if retention settings are configured.
 ///
