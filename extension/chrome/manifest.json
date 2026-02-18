@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Laterfeed",
   "description": "Save pages to your Laterfeed instance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
