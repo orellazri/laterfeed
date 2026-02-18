@@ -36,10 +36,15 @@ openOptionsLink.addEventListener("click", (e) => {
   config = result;
   mainForm.style.display = "block";
 
-  // Fill URL from active tab
+  // Fill URL and title from active tab
   const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tabs[0] && tabs[0].url) {
-    urlInput.value = tabs[0].url;
+  if (tabs[0]) {
+    if (tabs[0].url) {
+      urlInput.value = tabs[0].url;
+    }
+    if (tabs[0].title) {
+      titleInput.value = tabs[0].title;
+    }
   }
 })();
 

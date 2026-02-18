@@ -34,10 +34,15 @@ chrome.storage.sync.get(["baseUrl", "authToken"], (result) => {
   config = result;
   mainForm.style.display = "block";
 
-  // Fill URL from active tab
+  // Fill URL and title from active tab
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0] && tabs[0].url) {
-      urlInput.value = tabs[0].url;
+    if (tabs[0]) {
+      if (tabs[0].url) {
+        urlInput.value = tabs[0].url;
+      }
+      if (tabs[0].title) {
+        titleInput.value = tabs[0].title;
+      }
     }
   });
 });
